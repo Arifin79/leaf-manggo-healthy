@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "116874686969",
+    "project_id": "leaf-healthy-manggo",
+    "storage_bucket": "leaf-healthy-manggo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116874686969:android:6b1002c657772816200d28",
+        "android_client_info": {
+          "package_name": "com.example.leaf_healthy_manggo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXKCUCNdp1UDXqZ2j3tFKkSLX9zCZbaWM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

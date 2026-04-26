@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyA5SXNj4x9Pd6uIhJEaSgLxHC3wfTlt_bk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>116874686969</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.leaf-healthy-manggo</string>
+	<key>PROJECT_ID</key>
+	<string>leaf-healthy-manggo</string>
+	<key>STORAGE_BUCKET</key>
+	<string>leaf-healthy-manggo.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:116874686969:ios:6306abb9e6de704d200d28</string>
+</dict>
+</plist>

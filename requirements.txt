@@ -1,0 +1,7 @@
+Flask==3.0.0
+scikit-learn
+scikit-image
+numpy
+Pillow
+gunicorn
+werkzeug
