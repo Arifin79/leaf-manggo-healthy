@@ -18,7 +18,7 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkBlueText),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkBlueText),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -112,7 +112,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 48),
 
                 if (isLoggedIn) ...[
-                  // Go to Dashboard Button
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),
                     child: SizedBox(
@@ -139,6 +139,7 @@ class ProfilePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+    
                   // Logout Button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),

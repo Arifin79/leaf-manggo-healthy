@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkBlueText),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkBlueText),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -206,21 +206,6 @@ class _LoginPageState extends State<LoginPage> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: const BorderSide(color: primaryBlue, width: 2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Lupa Password?',
-                        style: TextStyle(
-                          color: primaryBlue,
-                          fontWeight: FontWeight.w600,
-                        ),
                       ),
                     ),
                   ),

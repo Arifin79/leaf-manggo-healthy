@@ -13,7 +13,7 @@ class ClassificationRepositoryImpl implements ClassificationRepository {
   final http.Client _client;
 
   ClassificationRepositoryImpl({
-    this.baseUrl = 'https://filosus-corymbed-zella.ngrok-free.dev/predict',
+    this.baseUrl = 'https://hadez.pythonanywhere.com/predict',
     http.Client? client,
   }) : _client = client ?? http.Client();
 

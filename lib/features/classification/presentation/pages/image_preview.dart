@@ -121,14 +121,12 @@ class ImagePreviewPage extends StatelessWidget {
                 const SizedBox(height: 20),
                 PrimaryButton(
                   label: 'Klasifikasi Sekarang',
-                  icon: Icons.refresh_rounded,
                   isLoading: loading,
                   onPressed: loading ? null : () => _classifyImage(context),
                 ),
                 const SizedBox(height: 12),
                 PrimaryButton(
                   label: 'Ganti Gambar',
-                  icon: Icons.check_rounded,
                   isOutlined: true,
                   onPressed: loading ? null : () => _replaceImage(context),
                 ),

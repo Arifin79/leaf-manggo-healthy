@@ -20,6 +20,12 @@ class LibraryItemData {
   final String subtitle;
   final String shortDescription;
 
+  // Added base64 image
+  final String? imageBase64;
+  
+  // Admin only note
+  final String? adminNote;
+
   const LibraryItemData({
     this.id,
     required this.title,
@@ -37,6 +43,8 @@ class LibraryItemData {
     required this.spreadWarning,
     required this.subtitle,
     required this.shortDescription,
+    this.imageBase64,
+    this.adminNote,
   });
 
   /// Create from Firestore document
@@ -59,6 +67,8 @@ class LibraryItemData {
       chemicalDose: data['chemicalDose'] as String? ?? '',
       chemicalTime: data['chemicalTime'] as String? ?? '',
       spreadWarning: data['spreadWarning'] as String? ?? '',
+      imageBase64: data['imageBase64'] as String?,
+      adminNote: data['adminNote'] as String?,
     );
   }
 
@@ -80,11 +90,13 @@ class LibraryItemData {
       'chemicalDose': chemicalDose,
       'chemicalTime': chemicalTime,
       'spreadWarning': spreadWarning,
+      'imageBase64': imageBase64,
+      'adminNote': adminNote,
     };
   }
 
   /// Create a copy with a new id
-  LibraryItemData copyWith({String? id}) {
+  LibraryItemData copyWith({String? id, String? adminNote}) {
     return LibraryItemData(
       id: id ?? this.id,
       title: title,
@@ -102,6 +114,9 @@ class LibraryItemData {
       chemicalDose: chemicalDose,
       chemicalTime: chemicalTime,
       spreadWarning: spreadWarning,
+      imageBase64: imageBase64,
+      adminNote: adminNote ?? this.adminNote,
     );
   }
 }
+

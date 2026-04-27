@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 import '../models/library_item_data.dart';
 
 class AdminLibraryDetailPage extends StatelessWidget {
@@ -20,7 +22,7 @@ class AdminLibraryDetailPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkBlueText),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkBlueText),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -130,43 +132,60 @@ class AdminLibraryDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Image Placeholder
-            Container(
-              width: double.infinity,
-              height: 250,
-              decoration: BoxDecoration(
-                color: lightBlueBg,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Icon(
-                      Icons.image_outlined,
-                      size: 60,
-                      color: Colors.blue.withOpacity(0.3),
-                    ),
+            // Image or Placeholder
+            Builder(
+              builder: (context) {
+                Uint8List? imageBytes;
+                if (item.imageBase64 != null && item.imageBase64!.isNotEmpty) {
+                  try {
+                    imageBytes = base64Decode(item.imageBase64!);
+                  } catch (_) {}
+                }
+                
+                return Container(
+                  width: double.infinity,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    color: imageBytes != null ? Colors.black : lightBlueBg,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'Visual Reference: ${item.title}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
+                  child: Stack(
+                    children: [
+                      if (imageBytes != null)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.memory(imageBytes, width: double.infinity, height: double.infinity, fit: BoxFit.cover),
+                        )
+                      else
+                        Center(
+                          child: Icon(
+                            Icons.image_outlined,
+                            size: 60,
+                            color: Colors.blue.withOpacity(0.3),
+                          ),
+                        ),
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Visual Reference: ${item.title}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              }
             ),
             const SizedBox(height: 32),
 
@@ -500,6 +519,48 @@ class AdminLibraryDetailPage extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 24),
+
+            // Catatan Khusus Admin
+            if (item.adminNote != null && item.adminNote!.trim().isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.yellow.shade50,
+                  border: Border.all(color: Colors.amber.shade300),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.admin_panel_settings, color: Colors.amber.shade800, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Catatan Khusus Admin',
+                          style: TextStyle(
+                            color: Colors.amber.shade900,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      item.adminNote!,
+                      style: TextStyle(
+                        color: Colors.grey.shade800,
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 40),
           ],
         ),

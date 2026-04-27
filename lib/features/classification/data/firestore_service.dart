@@ -9,6 +9,10 @@ class FirestoreService {
   CollectionReference<Map<String, dynamic>> get _diseasesRef =>
       _db.collection('diseases');
 
+  /// Reference to the 'saved_classifications' collection
+  CollectionReference<Map<String, dynamic>> get _savedClassificationsRef =>
+      _db.collection('saved_classifications');
+
   // ────────────────────────────────────────────
   //  READ
   // ────────────────────────────────────────────
@@ -63,6 +67,36 @@ class FirestoreService {
   Future<void> deleteLibraryItem(String id) async {
     await _diseasesRef.doc(id).delete();
   }
+
+  // ────────────────────────────────────────────
+  //  SAVED CLASSIFICATIONS
+  // ────────────────────────────────────────────
+
+  /// Stream of saved classifications
+  Stream<List<Map<String, dynamic>>> streamSavedClassifications() {
+    return _savedClassificationsRef
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Inject document ID for deletion
+        return data;
+      }).toList();
+    });
+  }
+
+  /// Save a classification result
+  Future<void> saveClassification(Map<String, dynamic> data) async {
+    data['timestamp'] = FieldValue.serverTimestamp();
+    await _savedClassificationsRef.add(data);
+  }
+
+  /// Delete a saved classification
+  Future<void> deleteSavedClassification(String id) async {
+    await _savedClassificationsRef.doc(id).delete();
+  }
+
 
   // ────────────────────────────────────────────
   //  SEED

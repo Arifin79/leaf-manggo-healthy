@@ -1,16 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
-import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'package:image/image.dart' as img;
-import '../providers/classification_provider.dart';
-import '../providers/auth_provider.dart';
+import 'dart:typed_data';
 import '../models/library_item_data.dart';
 import '../../data/firestore_service.dart';
 
-class ResultPage extends StatelessWidget {
-  const ResultPage({super.key});
+class SavedResultDetailPage extends StatefulWidget {
+  final Map<String, dynamic> savedItem;
+
+  const SavedResultDetailPage({super.key, required this.savedItem});
+
+  @override
+  State<SavedResultDetailPage> createState() => _SavedResultDetailPageState();
+}
+
+class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
+  final FirestoreService _firestoreService = FirestoreService();
+  LibraryItemData? _diseaseData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDiseaseData();
+  }
+
+  Future<void> _fetchDiseaseData() async {
+    final String categoryName = widget.savedItem['result'] ?? 'Unknown';
+    try {
+      final data = await _firestoreService.getLibraryItemByTitle(categoryName);
+      if (mounted) {
+        setState(() {
+          _diseaseData = data;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,35 +50,52 @@ class ResultPage extends StatelessWidget {
     const Color lightGreenBg = Color(0xFFF6F9F4);
     const Color lightBlueText = Color(0xFF6E8DF1);
 
+    final String categoryName = widget.savedItem['result'] ?? 'Unknown';
+    final dynamic rawConfidence = widget.savedItem['confidence'];
+    final int percent = rawConfidence is num ? rawConfidence.toInt() : 0;
+    final bool isHealthy = categoryName.toLowerCase().contains('sehat') || categoryName.toLowerCase() == 'healthy';
+    final String? imageBase64 = widget.savedItem['image_base64'];
+    Uint8List? imageBytes;
+    if (imageBase64 != null && imageBase64.isNotEmpty) {
+      try {
+        imageBytes = base64Decode(imageBase64);
+      } catch (_) {}
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white, elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkGreen), onPressed: () => Navigator.pop(context)),
-        title: const Text('LAPORAN DIAGNOSIS', style: TextStyle(color: darkGreen, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+        title: const Text('DETAIL DIAGNOSIS', style: TextStyle(color: darkGreen, fontSize: 14, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
         centerTitle: true,
       ),
-      body: Consumer<ClassificationProvider>(
-        builder: (context, provider, _) {
-          final result = provider.result;
-          final image = provider.selectedImage;
-          final int percent = result?.confidencePercent ?? 0;
-          final String categoryName = result?.category ?? 'Unknown';
-          final LibraryItemData? diseaseData = provider.matchedLibraryItem;
-
-          final bool isHealthy = categoryName.toLowerCase().contains('sehat') || categoryName.toLowerCase() == 'healthy';
-
-          return SingleChildScrollView(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Image Card
               Container(
                 width: double.infinity, height: 300,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), color: Colors.black),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24), 
+                  color: imageBytes != null ? Colors.black : (isHealthy ? Colors.green.shade100 : Colors.orange.shade100),
+                ),
                 child: Stack(children: [
-                  if (image != null)
-                    ClipRRect(borderRadius: BorderRadius.circular(24),
-                      child: Image.file(image, width: double.infinity, height: double.infinity, fit: BoxFit.cover)),
+                  if (imageBytes != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.memory(imageBytes, width: double.infinity, height: double.infinity, fit: BoxFit.cover),
+                    )
+                  else
+                    Center(
+                      child: Icon(
+                        isHealthy ? Icons.eco_rounded : Icons.coronavirus_rounded, 
+                        size: 80, 
+                        color: isHealthy ? Colors.green.shade700 : Colors.orange.shade700,
+                      ),
+                    ),
                   Positioned(bottom: 16, left: 16, child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(20)),
@@ -66,14 +115,14 @@ class ResultPage extends StatelessWidget {
                 TextSpan(text: isHealthy ? 'Status Daun:\n' : 'Infeksi Terdeteksi:\n', style: const TextStyle(fontWeight: FontWeight.w600, fontFamily: 'serif')),
                 TextSpan(text: categoryName, style: const TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold, fontFamily: 'serif')),
               ])),
-              if (diseaseData != null) ...[
+              if (_diseaseData != null) ...[
                 const SizedBox(height: 4),
-                Text(diseaseData.originalName, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                Text(_diseaseData!.originalName, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               ],
               const SizedBox(height: 16),
               // Description from Firestore
               Text(
-                diseaseData?.description ?? 'Deskripsi penyakit tidak tersedia.',
+                _diseaseData?.description ?? 'Deskripsi penyakit tidak tersedia.',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 32),
@@ -106,29 +155,29 @@ class ResultPage extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Disease detail sections from Firestore
-              if (diseaseData != null) ...[
+              if (_diseaseData != null) ...[
                 // Bagian Diserang
-                if (diseaseData.partsAttacked.isNotEmpty) ...[
+                if (_diseaseData!.partsAttacked.isNotEmpty) ...[
                   _sectionHeader(isHealthy ? 'Kondisi Tanaman' : 'Bagian Diserang', Icons.coronavirus_outlined),
                   const SizedBox(height: 12),
-                  ...diseaseData.partsAttacked.entries.map((e) => _bulletPoint('${e.key}: ${e.value}')),
+                  ..._diseaseData!.partsAttacked.entries.map((e) => _bulletPoint('${e.key}: ${e.value}')),
                   const SizedBox(height: 24),
                 ],
 
                 // Gejala Serangan
-                if (diseaseData.earlyPhase.isNotEmpty || diseaseData.chronicPhase.isNotEmpty) ...[
+                if (_diseaseData!.earlyPhase.isNotEmpty || _diseaseData!.chronicPhase.isNotEmpty) ...[
                   _sectionHeader('Gejala Serangan', Icons.visibility_outlined),
                   const SizedBox(height: 12),
-                  if (diseaseData.earlyPhase.isNotEmpty) ...[
+                  if (_diseaseData!.earlyPhase.isNotEmpty) ...[
                     _phaseTag('Fase Awal', Colors.blue.shade100, Colors.blue.shade800),
                     const SizedBox(height: 6),
-                    Text(diseaseData.earlyPhase, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.5)),
+                    Text(_diseaseData!.earlyPhase, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.5)),
                     const SizedBox(height: 12),
                   ],
-                  if (diseaseData.chronicPhase.isNotEmpty) ...[
+                  if (_diseaseData!.chronicPhase.isNotEmpty) ...[
                     _phaseTag('Fase Kronis', Colors.orange.shade100, Colors.orange.shade800),
                     const SizedBox(height: 6),
-                    Text(diseaseData.chronicPhase, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.5)),
+                    Text(_diseaseData!.chronicPhase, style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.5)),
                   ],
                   const SizedBox(height: 24),
                 ],
@@ -141,22 +190,22 @@ class ResultPage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Kultur Teknis
-                if (diseaseData.technicalControl.isNotEmpty)
-                  ...diseaseData.technicalControl.map((step) => _recCard(
+                if (_diseaseData!.technicalControl.isNotEmpty)
+                  ..._diseaseData!.technicalControl.map((step) => _recCard(
                     icon: Icons.eco_outlined, title: 'Kultur Teknis', description: step)),
 
                 // Kimiawi
-                if (diseaseData.chemicalControlInfo.isNotEmpty)
-                  _recCard(icon: Icons.science_outlined, title: 'Pengendalian Kimiawi', description: diseaseData.chemicalControlInfo),
+                if (_diseaseData!.chemicalControlInfo.isNotEmpty)
+                  _recCard(icon: Icons.science_outlined, title: 'Pengendalian Kimiawi', description: _diseaseData!.chemicalControlInfo),
 
-                if (diseaseData.chemicalDose.isNotEmpty)
-                  _recCard(icon: Icons.local_pharmacy_outlined, title: 'Dosis', description: diseaseData.chemicalDose),
+                if (_diseaseData!.chemicalDose.isNotEmpty)
+                  _recCard(icon: Icons.local_pharmacy_outlined, title: 'Dosis', description: _diseaseData!.chemicalDose),
 
-                if (diseaseData.chemicalTime.isNotEmpty)
-                  _recCard(icon: Icons.access_time, title: 'Waktu Aplikasi', description: diseaseData.chemicalTime),
+                if (_diseaseData!.chemicalTime.isNotEmpty)
+                  _recCard(icon: Icons.access_time, title: 'Waktu Aplikasi', description: _diseaseData!.chemicalTime),
 
                 // Peringatan Penyebaran
-                if (diseaseData.spreadWarning.isNotEmpty) ...[
+                if (_diseaseData!.spreadWarning.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity, padding: const EdgeInsets.all(20),
@@ -168,7 +217,7 @@ class ResultPage extends StatelessWidget {
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         const Text('Peringatan Penyebaran', style: TextStyle(color: Colors.orangeAccent, fontSize: 14, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
-                        Text(diseaseData.spreadWarning, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, height: 1.5)),
+                        Text(_diseaseData!.spreadWarning, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, height: 1.5)),
                       ])),
                     ]),
                   ),
@@ -181,103 +230,9 @@ class ResultPage extends StatelessWidget {
                 _recCard(icon: Icons.science_outlined, title: 'Aplikasi Fungisida', description: 'Gunakan fungisida berbahan dasar tembaga untuk menghentikan penyebaran spora.'),
                 _recCard(icon: Icons.water_drop_outlined, title: 'Manajemen Irigasi', description: 'Atur penyiraman hanya pada bagian akar, hindari membasahi daun secara berlebih.'),
               ],
-              const SizedBox(height: 80),
+              const SizedBox(height: 40),
             ]),
-          );
-        },
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0, right: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton.icon(
-              onPressed: () async {
-                final auth = Provider.of<AppAuthProvider>(context, listen: false);
-                final fs = FirestoreService();
-                final classProvider = Provider.of<ClassificationProvider>(context, listen: false);
-                final categoryName = classProvider.result?.category ?? 'Unknown';
-                final percent = classProvider.result?.confidencePercent ?? 0;
-                final imageFile = classProvider.selectedImage;
-                
-                // Set loading state for button (can be handled with a simple progress dialog)
-                if (context.mounted) {
-                  showDialog(
-                    context: context, 
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return const Center(child: CircularProgressIndicator(color: Colors.orange));
-                    }
-                  );
-                }
-
-                try {
-                  String? base64Image;
-                  
-                  // Process image to Base64 (Compress/Resize first so it fits in Firestore)
-                  if (imageFile != null) {
-                    final bytes = await imageFile.readAsBytes();
-                    img.Image? originalImage = img.decodeImage(bytes);
-                    
-                    if (originalImage != null) {
-                      // Resize to a small thumbnail to ensure it's under 1MB limit 
-                      // (e.g. width 400px maintains aspect ratio)
-                      img.Image resizedImage = img.copyResize(originalImage, width: 400);
-                      
-                      // Encode to jpg with lower quality (e.g. 70%)
-                      List<int> compressedBytes = img.encodeJpg(resizedImage, quality: 70);
-                      base64Image = base64Encode(compressedBytes);
-                    }
-                  }
-
-                  await fs.saveClassification({
-                    'result': categoryName,
-                    'confidence': percent,
-                    'date': DateFormat('dd MMM yyyy, HH:mm').format(DateTime.now()),
-                    'user': auth.userEmail ?? 'Guest',
-                    'image_base64': base64Image,
-                  });
-                  
-                  // Dismiss loading dialog
-                  if (context.mounted) Navigator.pop(context);
-                  
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Hasil klasifikasi berhasil disimpan')),
-                    );
-                  }
-                } catch (e) {
-                  // Dismiss loading dialog
-                  if (context.mounted) Navigator.pop(context);
-                  
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal menyimpan: $e')),
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.save_rounded, size: 20),
-              label: const Text('Simpan'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 4),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton.icon(
-              onPressed: () {
-                Provider.of<ClassificationProvider>(context, listen: false).resetAll();
-                Navigator.of(context).popUntil((r) => r.isFirst);
-              },
-              icon: const Icon(Icons.home_filled, size: 20),
-              label: const Text('Kembali'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 4),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 

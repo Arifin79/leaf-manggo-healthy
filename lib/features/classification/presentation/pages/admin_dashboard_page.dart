@@ -68,9 +68,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
               ListTile(
                 leading: const Icon(Icons.edit_outlined, color: Colors.blue),
                 title: const Text('Edit Data'),
-                onTap: () {
+                onTap: () async {
                   Navigator.pop(ctx);
-                  // TODO: Navigate to Edit Page (reuse Add Disease Page with initial data)
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AddDiseasePage(itemToEdit: item)),
+                  );
+                  if (mounted) {
+                    context.read<LibraryProvider>().loadItems();
+                  }
                 },
               ),
               ListTile(
@@ -78,7 +84,88 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 title: const Text('Tambah Catatan Khusus'),
                 onTap: () {
                   Navigator.pop(ctx);
-                  // TODO: Implement note adding
+                  
+                  final noteCtrl = TextEditingController(text: item.adminNote);
+                  
+                  showDialog(
+                    context: context,
+                    builder: (dialogCtx) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.admin_panel_settings, color: Colors.amber.shade800, size: 24),
+                              const SizedBox(width: 10),
+                              const Text('Catatan Khusus', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          RichText(
+                            text: TextSpan(
+                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600, height: 1.4),
+                              children: [
+                                const TextSpan(text: 'Penyakit: '),
+                                TextSpan(text: item.title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.9,
+                        child: TextField(
+                          controller: noteCtrl,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                            hintText: 'Tulis informasi tambahan atau catatan rahasia di sini...\n(Hanya admin yang bisa melihat)',
+                            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, height: 1.5),
+                            filled: true,
+                            fillColor: Colors.amber.shade50.withOpacity(0.3),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade200)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade200)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade600, width: 2)),
+                          ),
+                        ),
+                      ),
+                      actionsPadding: const EdgeInsets.only(bottom: 20, right: 20, left: 20),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogCtx),
+                          child: Text('Batal', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final newNote = noteCtrl.text.trim();
+                            Navigator.pop(dialogCtx);
+                            
+                            // Save to firestore
+                            final updatedItem = item.copyWith(adminNote: newNote);
+                            if (updatedItem.id != null) {
+                              final success = await context.read<LibraryProvider>().updateItem(updatedItem.id!, updatedItem);
+                              if (context.mounted) {
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Catatan berhasil disimpan')));
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menyimpan catatan')));
+                                }
+                              }
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: const Text('Simpan Catatan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -108,7 +195,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkBlueText),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: darkBlueText),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
