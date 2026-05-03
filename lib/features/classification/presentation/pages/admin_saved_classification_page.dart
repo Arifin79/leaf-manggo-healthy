@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'saved_result_detail_page.dart'; // import to navigate to Detail Page
 import '../../data/firestore_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class AdminSavedClassificationPage extends StatefulWidget {
   const AdminSavedClassificationPage({super.key});
@@ -54,6 +56,9 @@ class _AdminSavedClassificationPageState extends State<AdminSavedClassificationP
     const Color primaryBlue = Color(0xFF007BFF);
     const Color darkBlueText = Color(0xFF0A2540);
 
+    final authProvider = Provider.of<AppAuthProvider>(context);
+    final userFilter = authProvider.isLoggedIn ? authProvider.userEmail : 'Guest';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -74,7 +79,7 @@ class _AdminSavedClassificationPageState extends State<AdminSavedClassificationP
         centerTitle: true,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _firestoreService.streamSavedClassifications(),
+        stream: _firestoreService.streamSavedClassifications(userFilter: userFilter),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

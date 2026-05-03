@@ -73,16 +73,21 @@ class FirestoreService {
   // ────────────────────────────────────────────
 
   /// Stream of saved classifications
-  Stream<List<Map<String, dynamic>>> streamSavedClassifications() {
+  Stream<List<Map<String, dynamic>>> streamSavedClassifications({String? userFilter}) {
     return _savedClassificationsRef
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      final allDocs = snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id; // Inject document ID for deletion
         return data;
       }).toList();
+
+      if (userFilter != null) {
+        return allDocs.where((doc) => doc['user'] == userFilter).toList();
+      }
+      return allDocs;
     });
   }
 

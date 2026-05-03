@@ -4,6 +4,8 @@ import 'admin_dashboard_page.dart';
 import 'profile_page.dart';
 import '../providers/library_provider.dart';
 import 'admin_saved_classification_page.dart';
+import '../../data/firestore_service.dart';
+import '../providers/auth_provider.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -62,7 +64,22 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 Row(children: [
                   Expanded(child: _buildSummaryCard(title: 'Jumlah Penyakit', count: libraryProvider.items.length.toString(), icon: Icons.spa_outlined, color: Colors.green)),
                   const SizedBox(width: 16),
-                  Expanded(child: _buildSummaryCard(title: 'Total Catatan', count: '0', icon: Icons.note_alt_outlined, color: Colors.orange)),
+                  Expanded(
+                    child: StreamBuilder<List<Map<String, dynamic>>>(
+                      stream: FirestoreService().streamSavedClassifications(
+                        userFilter: context.watch<AppAuthProvider>().userEmail
+                      ),
+                      builder: (context, snapshot) {
+                        final count = snapshot.hasData ? snapshot.data!.length.toString() : '...';
+                        return _buildSummaryCard(
+                          title: 'Hasil Klasifikasi', 
+                          count: count, 
+                          icon: Icons.save_outlined, 
+                          color: Colors.orange
+                        );
+                      }
+                    ),
+                  ),
                 ]),
                 const SizedBox(height: 40),
                 const Text('Menu Utama', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: darkBlueText)),
