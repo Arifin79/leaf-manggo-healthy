@@ -65,6 +65,84 @@ class AppAuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get current display name (username)
+  String? get displayName => _auth.currentUser?.displayName;
+
+  /// Update display name (username)
+  Future<bool> updateUsername(String newUsername) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _auth.currentUser?.updateDisplayName(newUsername.trim());
+      await _auth.currentUser?.reload();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Gagal mengubah username: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Update password
+  Future<bool> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        _isLoading = false;
+        _errorMessage = 'Pengguna tidak ditemukan.';
+        notifyListeners();
+        return false;
+      }
+
+      // Re-authenticate before changing password
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      _isLoading = false;
+      switch (e.code) {
+        case 'wrong-password':
+        case 'invalid-credential':
+          _errorMessage = 'Password saat ini salah.';
+          break;
+        case 'weak-password':
+          _errorMessage = 'Password baru terlalu lemah (minimal 6 karakter).';
+          break;
+        case 'requires-recent-login':
+          _errorMessage = 'Sesi kadaluarsa. Silakan login ulang.';
+          break;
+        default:
+          _errorMessage = 'Gagal mengubah password: ${e.message}';
+      }
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Terjadi kesalahan: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Clear error message
   void clearError() {
     _errorMessage = null;

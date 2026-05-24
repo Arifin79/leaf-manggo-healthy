@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'login_page.dart';
 import 'admin_home_page.dart';
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -63,7 +64,11 @@ class ProfilePage extends StatelessWidget {
                 
                 // Name
                 Text(
-                  isLoggedIn ? 'Admin' : 'Admin Akses',
+                  isLoggedIn
+                      ? (authProvider.displayName?.isNotEmpty == true
+                          ? authProvider.displayName!
+                          : 'Admin')
+                      : 'Admin Akses',
                   style: const TextStyle(
                     color: darkBlueText,
                     fontSize: 24,
@@ -112,6 +117,33 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 48),
 
                 if (isLoggedIn) ...[
+
+                  // Edit Profile Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                          );
+                        },
+                        icon: const Icon(Icons.edit_outlined, size: 20),
+                        label: const Text('Edit Profil'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: primaryBlue,
+                          side: const BorderSide(color: primaryBlue),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),
