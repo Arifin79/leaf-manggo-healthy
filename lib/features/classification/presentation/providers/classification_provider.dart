@@ -50,7 +50,6 @@ class ClassificationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Set the matched library item after classification
   void setMatchedLibraryItem(LibraryItemData? item) {
     _matchedLibraryItem = item;
     notifyListeners();

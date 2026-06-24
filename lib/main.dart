@@ -14,7 +14,6 @@ void main() async {
   await Firebase.initializeApp();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // Seed initial disease data to Firestore if empty
   final firestoreService = FirestoreService();
   await firestoreService.seedInitialData();
 

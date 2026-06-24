@@ -15,7 +15,6 @@ class _LibraryPageState extends State<LibraryPage> {
   @override
   void initState() {
     super.initState();
-    // Load items from Firestore
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LibraryProvider>().loadItems();
     });

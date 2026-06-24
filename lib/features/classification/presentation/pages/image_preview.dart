@@ -59,11 +59,9 @@ class ImagePreviewPage extends StatelessWidget {
     if (!context.mounted) return;
 
     if (provider.state == ClassificationState.success) {
-      // Match the classification result with library data from Firestore
       final categoryName = provider.result?.category ?? '';
       final libraryProvider = context.read<LibraryProvider>();
 
-      // Try local first, then Firestore
       var matchedItem = libraryProvider.findByTitle(categoryName);
       matchedItem ??= await libraryProvider.findByTitleFromFirestore(categoryName);
 

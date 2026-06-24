@@ -41,7 +41,6 @@ class LibraryDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Tentang Penyakit Section
             const Text(
               'TENTANG PENYAKIT',
               style: TextStyle(
@@ -132,7 +131,6 @@ class LibraryDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Image or Placeholder
             Builder(
               builder: (context) {
                 Uint8List? imageBytes;
@@ -189,11 +187,9 @@ class LibraryDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Bagian Diserang & Gejala Serangan
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Bagian Diserang
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -256,7 +252,6 @@ class LibraryDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Gejala Serangan
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -305,7 +300,6 @@ class LibraryDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Metode Pengendalian
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -340,7 +334,6 @@ class LibraryDetailPage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Kultur Teknis
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -389,7 +382,6 @@ class LibraryDetailPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      // Pengendalian Kimiawi
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -472,7 +464,6 @@ class LibraryDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Peringatan Penyebaran
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),

@@ -106,7 +106,6 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 32),
 
-            // Main Upload Card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
@@ -171,7 +170,6 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Two Info Cards
             Row(
               children: [
                 Expanded(
@@ -241,7 +239,7 @@ class HomePage extends StatelessWidget {
                             height: 1.4,
                           ),
                         ),
-                        SizedBox(height: 20), // Placeholder to match height if needed
+                        SizedBox(height: 20), 
                       ],
                     ),
                   ),
@@ -251,7 +249,6 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 32),
 
-            // Bottom Buttons
             Row(
               children: [
                 Expanded(

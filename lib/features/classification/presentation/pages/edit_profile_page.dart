@@ -13,11 +13,9 @@ class _EditProfilePageState extends State<EditProfilePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Username form
   final _usernameFormKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
 
-  // Password form
   final _passwordFormKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -167,7 +165,6 @@ class _EditProfilePageState extends State<EditProfilePage>
           return TabBarView(
             controller: _tabController,
             children: [
-              // ── Tab 1: Ubah Username ──────────────────────────────────
               SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Form(
@@ -240,7 +237,6 @@ class _EditProfilePageState extends State<EditProfilePage>
                 ),
               ),
 
-              // ── Tab 2: Ubah Password ──────────────────────────────────
               SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Form(

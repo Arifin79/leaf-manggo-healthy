@@ -101,7 +101,6 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 48),
 
-                  // Error Message
                   if (authProvider.errorMessage != null) ...[
                     Container(
                       width: double.infinity,

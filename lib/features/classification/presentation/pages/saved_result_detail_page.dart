@@ -154,9 +154,7 @@ class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
               ),
               const SizedBox(height: 32),
 
-              // Disease detail sections from Firestore
               if (_diseaseData != null) ...[
-                // Bagian Diserang
                 if (_diseaseData!.partsAttacked.isNotEmpty) ...[
                   _sectionHeader(isHealthy ? 'Kondisi Tanaman' : 'Bagian Diserang', Icons.coronavirus_outlined),
                   const SizedBox(height: 12),
@@ -164,7 +162,6 @@ class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
                   const SizedBox(height: 24),
                 ],
 
-                // Gejala Serangan
                 if (_diseaseData!.earlyPhase.isNotEmpty || _diseaseData!.chronicPhase.isNotEmpty) ...[
                   _sectionHeader('Gejala Serangan', Icons.visibility_outlined),
                   const SizedBox(height: 12),
@@ -182,19 +179,16 @@ class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
                   const SizedBox(height: 24),
                 ],
 
-                // Rekomendasi / Pengendalian
                 const Text('Rekomendasi Ahli', style: TextStyle(color: darkGreen, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'serif')),
                 const SizedBox(height: 4),
                 Text(isHealthy ? 'Tips perawatan untuk menjaga kesehatan tanaman' : 'Langkah penanganan yang direkomendasikan',
                   style: const TextStyle(color: Colors.grey, fontSize: 14)),
                 const SizedBox(height: 16),
 
-                // Kultur Teknis
                 if (_diseaseData!.technicalControl.isNotEmpty)
                   ..._diseaseData!.technicalControl.map((step) => _recCard(
                     icon: Icons.eco_outlined, title: 'Kultur Teknis', description: step)),
 
-                // Kimiawi
                 if (_diseaseData!.chemicalControlInfo.isNotEmpty)
                   _recCard(icon: Icons.science_outlined, title: 'Pengendalian Kimiawi', description: _diseaseData!.chemicalControlInfo),
 
@@ -204,7 +198,6 @@ class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
                 if (_diseaseData!.chemicalTime.isNotEmpty)
                   _recCard(icon: Icons.access_time, title: 'Waktu Aplikasi', description: _diseaseData!.chemicalTime),
 
-                // Peringatan Penyebaran
                 if (_diseaseData!.spreadWarning.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Container(
@@ -223,7 +216,6 @@ class _SavedResultDetailPageState extends State<SavedResultDetailPage> {
                   ),
                 ],
               ] else ...[
-                // Fallback if no Firestore match
                 const Text('Rekomendasi Ahli', style: TextStyle(color: darkGreen, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'serif')),
                 const SizedBox(height: 16),
                 _recCard(icon: Icons.content_cut_rounded, title: 'Sanitasi Bagian Terinfeksi', description: 'Bersihkan bagian tanaman yang terinfeksi dan buang jauh dari area kebun.'),

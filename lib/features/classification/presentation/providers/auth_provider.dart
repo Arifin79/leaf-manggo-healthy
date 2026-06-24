@@ -14,7 +14,6 @@ class AppAuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  /// Sign in with email and password (Admin only)
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _errorMessage = null;
@@ -59,16 +58,13 @@ class AppAuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Sign out
   Future<void> logout() async {
     await _auth.signOut();
     notifyListeners();
   }
 
-  /// Get current display name (username)
   String? get displayName => _auth.currentUser?.displayName;
 
-  /// Update display name (username)
   Future<bool> updateUsername(String newUsername) async {
     _isLoading = true;
     _errorMessage = null;
@@ -88,7 +84,6 @@ class AppAuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Update password
   Future<bool> updatePassword({
     required String currentPassword,
     required String newPassword,
@@ -106,7 +101,6 @@ class AppAuthProvider extends ChangeNotifier {
         return false;
       }
 
-      // Re-authenticate before changing password
       final credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPassword,
@@ -143,7 +137,6 @@ class AppAuthProvider extends ChangeNotifier {
     }
   }
 
-  /// Clear error message
   void clearError() {
     _errorMessage = null;
     notifyListeners();

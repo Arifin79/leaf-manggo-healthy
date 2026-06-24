@@ -39,7 +39,6 @@ class ResultPage extends StatelessWidget {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20.0),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Image Card
               Container(
                 width: double.infinity, height: 300,
                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), color: Colors.black),
@@ -71,14 +70,12 @@ class ResultPage extends StatelessWidget {
                 Text(diseaseData.originalName, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
               ],
               const SizedBox(height: 16),
-              // Description from Firestore
               Text(
                 diseaseData?.description ?? 'Deskripsi penyakit tidak tersedia.',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 32),
 
-              // Akurasi Card
               Container(
                 width: double.infinity, padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(color: lightGreenBg, borderRadius: BorderRadius.circular(24)),
@@ -105,9 +102,7 @@ class ResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
-              // Disease detail sections from Firestore
               if (diseaseData != null) ...[
-                // Bagian Diserang
                 if (diseaseData.partsAttacked.isNotEmpty) ...[
                   _sectionHeader(isHealthy ? 'Kondisi Tanaman' : 'Bagian Diserang', Icons.coronavirus_outlined),
                   const SizedBox(height: 12),
@@ -115,7 +110,6 @@ class ResultPage extends StatelessWidget {
                   const SizedBox(height: 24),
                 ],
 
-                // Gejala Serangan
                 if (diseaseData.earlyPhase.isNotEmpty || diseaseData.chronicPhase.isNotEmpty) ...[
                   _sectionHeader('Gejala Serangan', Icons.visibility_outlined),
                   const SizedBox(height: 12),
@@ -133,19 +127,16 @@ class ResultPage extends StatelessWidget {
                   const SizedBox(height: 24),
                 ],
 
-                // Rekomendasi / Pengendalian
                 const Text('Rekomendasi Ahli', style: TextStyle(color: darkGreen, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'serif')),
                 const SizedBox(height: 4),
                 Text(isHealthy ? 'Tips perawatan untuk menjaga kesehatan tanaman' : 'Langkah penanganan yang direkomendasikan',
                   style: const TextStyle(color: Colors.grey, fontSize: 14)),
                 const SizedBox(height: 16),
 
-                // Kultur Teknis
                 if (diseaseData.technicalControl.isNotEmpty)
                   ...diseaseData.technicalControl.map((step) => _recCard(
                     icon: Icons.eco_outlined, title: 'Kultur Teknis', description: step)),
 
-                // Kimiawi
                 if (diseaseData.chemicalControlInfo.isNotEmpty)
                   _recCard(icon: Icons.science_outlined, title: 'Pengendalian Kimiawi', description: diseaseData.chemicalControlInfo),
 
@@ -155,7 +146,6 @@ class ResultPage extends StatelessWidget {
                 if (diseaseData.chemicalTime.isNotEmpty)
                   _recCard(icon: Icons.access_time, title: 'Waktu Aplikasi', description: diseaseData.chemicalTime),
 
-                // Peringatan Penyebaran
                 if (diseaseData.spreadWarning.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Container(
@@ -174,7 +164,6 @@ class ResultPage extends StatelessWidget {
                   ),
                 ],
               ] else ...[
-                // Fallback if no Firestore match
                 const Text('Rekomendasi Ahli', style: TextStyle(color: darkGreen, fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'serif')),
                 const SizedBox(height: 16),
                 _recCard(icon: Icons.content_cut_rounded, title: 'Sanitasi Bagian Terinfeksi', description: 'Bersihkan bagian tanaman yang terinfeksi dan buang jauh dari area kebun.'),
@@ -200,7 +189,6 @@ class ResultPage extends StatelessWidget {
                 final percent = classProvider.result?.confidencePercent ?? 0;
                 final imageFile = classProvider.selectedImage;
                 
-                // Set loading state for button (can be handled with a simple progress dialog)
                 if (context.mounted) {
                   showDialog(
                     context: context, 
@@ -214,17 +202,13 @@ class ResultPage extends StatelessWidget {
                 try {
                   String? base64Image;
                   
-                  // Process image to Base64 (Compress/Resize first so it fits in Firestore)
                   if (imageFile != null) {
                     final bytes = await imageFile.readAsBytes();
                     img.Image? originalImage = img.decodeImage(bytes);
                     
                     if (originalImage != null) {
-                      // Resize to a small thumbnail to ensure it's under 1MB limit 
-                      // (e.g. width 400px maintains aspect ratio)
                       img.Image resizedImage = img.copyResize(originalImage, width: 400);
                       
-                      // Encode to jpg with lower quality (e.g. 70%)
                       List<int> compressedBytes = img.encodeJpg(resizedImage, quality: 70);
                       base64Image = base64Encode(compressedBytes);
                     }
@@ -238,7 +222,6 @@ class ResultPage extends StatelessWidget {
                     'image_base64': base64Image,
                   });
                   
-                  // Dismiss loading dialog
                   if (context.mounted) Navigator.pop(context);
                   
                   if (context.mounted) {
@@ -247,7 +230,6 @@ class ResultPage extends StatelessWidget {
                     );
                   }
                 } catch (e) {
-                  // Dismiss loading dialog
                   if (context.mounted) Navigator.pop(context);
                   
                   if (context.mounted) {

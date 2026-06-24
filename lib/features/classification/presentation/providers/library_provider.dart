@@ -14,7 +14,6 @@ class LibraryProvider extends ChangeNotifier {
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
 
-  /// Load all library items from Firestore
   Future<void> loadItems() async {
     _isLoading = true;
     _errorMessage = null;
@@ -31,7 +30,6 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Find a library item by title (for matching classification results)
   LibraryItemData? findByTitle(String title) {
     try {
       return _items.firstWhere(
@@ -42,16 +40,14 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Find by title from Firestore directly (when items may not be loaded)
   Future<LibraryItemData?> findByTitleFromFirestore(String title) async {
     return await _firestoreService.getLibraryItemByTitle(title);
   }
 
-  /// Add a new disease item
   Future<bool> addItem(LibraryItemData item) async {
     try {
       await _firestoreService.addLibraryItem(item);
-      await loadItems(); // Refresh the list
+      await loadItems(); 
       return true;
     } catch (e) {
       _errorMessage = 'Gagal menambahkan data: $e';
@@ -60,11 +56,10 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Delete a disease item
   Future<bool> deleteItem(String id) async {
     try {
       await _firestoreService.deleteLibraryItem(id);
-      await loadItems(); // Refresh the list
+      await loadItems(); 
       return true;
     } catch (e) {
       _errorMessage = 'Gagal menghapus data: $e';
@@ -73,11 +68,10 @@ class LibraryProvider extends ChangeNotifier {
     }
   }
 
-  /// Update a disease item
   Future<bool> updateItem(String id, LibraryItemData item) async {
     try {
       await _firestoreService.updateLibraryItem(id, item);
-      await loadItems(); // Refresh the list
+      await loadItems(); 
       return true;
     } catch (e) {
       _errorMessage = 'Gagal memperbarui data: $e';

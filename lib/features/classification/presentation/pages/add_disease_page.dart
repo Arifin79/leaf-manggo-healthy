@@ -83,7 +83,7 @@ class _AddDiseasePageState extends State<AddDiseasePage> {
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
-        _existingBase64Image = null; // Clear existing if new picked
+        _existingBase64Image = null; 
       });
     }
   }
@@ -108,7 +108,6 @@ class _AddDiseasePageState extends State<AddDiseasePage> {
     
     String? base64Image = _existingBase64Image;
 
-    // Process new image to Base64
     if (_selectedImage != null) {
       try {
         final bytes = await _selectedImage!.readAsBytes();

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LibraryItemData {
-  final String? id; // Firestore document ID
+  final String? id;
   final String title;
   final String originalName;
   final String status;
@@ -16,14 +16,11 @@ class LibraryItemData {
   final String chemicalTime;
   final String spreadWarning;
   
-  // Attributes for list UI
   final String subtitle;
   final String shortDescription;
 
-  // Added base64 image
   final String? imageBase64;
   
-  // Admin only note
   final String? adminNote;
 
   const LibraryItemData({
@@ -47,7 +44,6 @@ class LibraryItemData {
     this.adminNote,
   });
 
-  /// Create from Firestore document
   factory LibraryItemData.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     return LibraryItemData(
@@ -72,7 +68,6 @@ class LibraryItemData {
     );
   }
 
-  /// Convert to Firestore-compatible map
   Map<String, dynamic> toFirestore() {
     return {
       'title': title,
@@ -95,7 +90,6 @@ class LibraryItemData {
     };
   }
 
-  /// Create a copy with a new id
   LibraryItemData copyWith({String? id, String? adminNote}) {
     return LibraryItemData(
       id: id ?? this.id,
