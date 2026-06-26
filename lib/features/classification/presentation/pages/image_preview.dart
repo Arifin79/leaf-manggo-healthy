@@ -8,13 +8,63 @@ import '../providers/classification_provider.dart';
 import '../providers/library_provider.dart';
 import 'result_page.dart';
 
+class _CropOverlayPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cropSize = size.width * 0.80;
+    final left   = (size.width  - cropSize) / 2;
+    final top    = (size.height - cropSize) / 2;
+    final cropRect = Rect.fromLTWH(left, top, cropSize, cropSize);
+
+    // gelap di luar kotak
+    final overlay = Paint()..color = Colors.black.withValues(alpha: 0.52);
+    final path = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..addRect(cropRect)
+      ..fillType = PathFillType.evenOdd;
+    canvas.drawPath(path, overlay);
+
+    // border kotak
+    final border = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+    canvas.drawRect(cropRect, border);
+
+    // sudut marker
+    const cornerLen = 22.0;
+    final corner = Paint()
+      ..color = AppTheme.primaryBlue
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+
+    final corners = [
+      [Offset(left, top + cornerLen), Offset(left, top), Offset(left + cornerLen, top)],
+      [Offset(left + cropSize - cornerLen, top), Offset(left + cropSize, top), Offset(left + cropSize, top + cornerLen)],
+      [Offset(left, top + cropSize - cornerLen), Offset(left, top + cropSize), Offset(left + cornerLen, top + cropSize)],
+      [Offset(left + cropSize - cornerLen, top + cropSize), Offset(left + cropSize, top + cropSize), Offset(left + cropSize, top + cropSize - cornerLen)],
+    ];
+    for (final pts in corners) {
+      final p = Path()..moveTo(pts[0].dx, pts[0].dy)..lineTo(pts[1].dx, pts[1].dy)..lineTo(pts[2].dx, pts[2].dy);
+      canvas.drawPath(p, corner);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class ImagePreviewPage extends StatelessWidget {
   const ImagePreviewPage({super.key});
 
   Future<void> _replaceImage(BuildContext context) async {
     final source = await _showSourceSheet(context);
     if (source == null || !context.mounted) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 90);
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 85,
+    );
 
     if (picked != null && context.mounted) {
       context.read<ClassificationProvider>().onImageSelected(File(picked.path));
@@ -109,10 +159,31 @@ class ImagePreviewPage extends StatelessWidget {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
-                    child: Image.file(
-                      provider.selectedImage!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.file(
+                          provider.selectedImage!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                        CustomPaint(painter: _CropOverlayPainter()),
+                        const Positioned(
+                          bottom: 14,
+                          left: 0,
+                          right: 0,
+                          child: Text(
+                            'Dekatkan kamera — daun harus memenuhi kotak',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),

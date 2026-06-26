@@ -22,7 +22,7 @@ class ClassificationRepositoryImpl implements ClassificationRepository {
     try {
       final request = http.MultipartRequest('POST', Uri.parse(baseUrl));
       request.files.add(
-          await http.MultipartFile.fromPath('image', imageFile.path)
+        await http.MultipartFile.fromPath('image', imageFile.path),
       );
 
       final streamed = await _client.send(request);
