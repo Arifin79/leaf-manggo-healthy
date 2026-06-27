@@ -16,6 +16,8 @@ class HomePage extends StatelessWidget {
     final picked = await picker.pickImage(
       source: source,
       imageQuality: 85,
+      maxWidth: 1024,
+      maxHeight: 1024,
     );
 
     if (picked != null && context.mounted) {

@@ -64,6 +64,8 @@ class ImagePreviewPage extends StatelessWidget {
     final picked = await ImagePicker().pickImage(
       source: source,
       imageQuality: 85,
+      maxWidth: 1024,
+      maxHeight: 1024,
     );
 
     if (picked != null && context.mounted) {
@@ -172,15 +174,29 @@ class ImagePreviewPage extends StatelessWidget {
                           bottom: 14,
                           left: 0,
                           right: 0,
-                          child: Text(
-                            'Dekatkan kamera — daun harus memenuhi kotak',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
-                            ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Jarak 5–10 cm • Daun memenuhi kotak',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  shadows: [Shadow(blurRadius: 6, color: Colors.black87)],
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'Background polos (kertas putih)',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
