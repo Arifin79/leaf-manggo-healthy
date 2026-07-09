@@ -175,81 +175,39 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.lightbulb_outline, color: primaryBlue, size: 20),
-                        SizedBox(height: 16),
-                        Text(
-                          'TIPS',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Gunakan cahaya alami untuk hasil terbaik.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: darkText,
-                            fontFamily: 'serif',
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
+            Container(
+              width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: cardBg,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Icon(Icons.verified_user_outlined, color: primaryBlue, size: 20),
-                        SizedBox(height: 16),
-                        Text(
-                          'AKURASI AI',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            letterSpacing: 1.0,
-                          ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Icon(Icons.lightbulb_outline, color: primaryBlue, size: 20),
+                      SizedBox(height: 16),
+                      Text(
+                        'TIPS',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          letterSpacing: 1.0,
                         ),
-                        SizedBox(height: 8),
-                        Text(
-                          '98.4% Confidence',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: darkText,
-                            fontFamily: 'serif',
-                            height: 1.4,
-                          ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Gunakan cahaya alami untuk hasil terbaik.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: darkText,
+                          fontFamily: 'serif',
+                          height: 1.4,
                         ),
-                        SizedBox(height: 20), 
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
             ),
 
             const SizedBox(height: 32),
