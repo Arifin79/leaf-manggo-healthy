@@ -33,6 +33,7 @@ class ResultPage extends StatelessWidget {
           final int percent = result?.confidencePercent ?? 0;
           final String categoryName = result?.category ?? 'Unknown';
           final LibraryItemData? diseaseData = provider.matchedLibraryItem;
+          final double? leafPixelPercentage = provider.leafPixelPercentage;
 
           final bool isHealthy = categoryName.toLowerCase().contains('sehat') || categoryName.toLowerCase() == 'healthy';
 
@@ -48,7 +49,7 @@ class ResultPage extends StatelessWidget {
                       child: Image.file(image, width: double.infinity, height: double.infinity, fit: BoxFit.cover)),
                   Positioned(bottom: 16, left: 16, child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha:0.6), borderRadius: BorderRadius.circular(20)),
                     child: Row(children: [
                       Container(width: 8, height: 8, decoration: BoxDecoration(color: isHealthy ? Colors.green : Colors.blue, shape: BoxShape.circle)),
                       const SizedBox(width: 6),
@@ -89,7 +90,7 @@ class ResultPage extends StatelessWidget {
                       const Text('COCOK', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.grey)),
                     ]),
                     progressColor: isHealthy ? Colors.green : Colors.blue,
-                    backgroundColor: (isHealthy ? Colors.green : Colors.blue).withOpacity(0.1),
+                    backgroundColor: (isHealthy ? Colors.green : Colors.blue).withValues(alpha:0.1),
                     circularStrokeCap: CircularStrokeCap.round, animation: true, animationDuration: 800,
                   ),
                   const SizedBox(height: 20),
@@ -98,6 +99,14 @@ class ResultPage extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(isHealthy ? 'Daun dalam kondisi sehat dan normal' : 'Konsisten dengan profil patogen tingkat keyakinan tinggi',
                     textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                  if (leafPixelPercentage != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'Terdeteksi ${(leafPixelPercentage * 100).toStringAsFixed(0)}% piksel daun',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontStyle: FontStyle.italic),
+                    ),
+                  ],
                 ]),
               ),
               const SizedBox(height: 32),
@@ -152,13 +161,13 @@ class ResultPage extends StatelessWidget {
                     width: double.infinity, padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(color: const Color(0xFF0D253F), borderRadius: BorderRadius.circular(20)),
                     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                      Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.white.withValues(alpha:0.1), borderRadius: BorderRadius.circular(12)),
                         child: const Icon(Icons.air_outlined, color: Colors.white, size: 24)),
                       const SizedBox(width: 16),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         const Text('Peringatan Penyebaran', style: TextStyle(color: Colors.orangeAccent, fontSize: 14, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
-                        Text(diseaseData.spreadWarning, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, height: 1.5)),
+                        Text(diseaseData.spreadWarning, style: TextStyle(color: Colors.white.withValues(alpha:0.9), fontSize: 12, height: 1.5)),
                       ])),
                     ]),
                   ),
@@ -290,8 +299,8 @@ class ResultPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 16), padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withOpacity(0.2)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))]),
+        border: Border.all(color: Colors.grey.withValues(alpha:0.2)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.02), blurRadius: 10, offset: const Offset(0, 4))]),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(padding: const EdgeInsets.all(12), decoration: const BoxDecoration(color: Color(0xFFF0F5ED), shape: BoxShape.circle),
           child: Icon(icon, color: const Color(0xFF5D7A58), size: 24)),

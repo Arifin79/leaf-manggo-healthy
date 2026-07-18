@@ -23,6 +23,12 @@ class LibraryItemData {
   
   final String? adminNote;
 
+  // true once the class is recognized by the classification model.
+  // false while a newly submitted class is still being trained.
+  final bool isActive;
+
+  final String? addedBy;
+
   const LibraryItemData({
     this.id,
     required this.title,
@@ -42,6 +48,8 @@ class LibraryItemData {
     required this.shortDescription,
     this.imageBase64,
     this.adminNote,
+    this.isActive = true,
+    this.addedBy,
   });
 
   factory LibraryItemData.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -65,6 +73,8 @@ class LibraryItemData {
       spreadWarning: data['spreadWarning'] as String? ?? '',
       imageBase64: data['imageBase64'] as String?,
       adminNote: data['adminNote'] as String?,
+      isActive: data['isActive'] as bool? ?? true,
+      addedBy: data['addedBy'] as String?,
     );
   }
 
@@ -87,10 +97,12 @@ class LibraryItemData {
       'spreadWarning': spreadWarning,
       'imageBase64': imageBase64,
       'adminNote': adminNote,
+      'isActive': isActive,
+      'addedBy': addedBy,
     };
   }
 
-  LibraryItemData copyWith({String? id, String? adminNote}) {
+  LibraryItemData copyWith({String? id, String? adminNote, bool? isActive, String? addedBy}) {
     return LibraryItemData(
       id: id ?? this.id,
       title: title,
@@ -110,6 +122,8 @@ class LibraryItemData {
       spreadWarning: spreadWarning,
       imageBase64: imageBase64,
       adminNote: adminNote ?? this.adminNote,
+      isActive: isActive ?? this.isActive,
+      addedBy: addedBy ?? this.addedBy,
     );
   }
 }

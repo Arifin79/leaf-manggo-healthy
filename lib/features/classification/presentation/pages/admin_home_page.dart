@@ -45,7 +45,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage())),
               child: Container(
                 padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryBlue.withOpacity(0.5), width: 2)),
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: primaryBlue.withValues(alpha:0.5), width: 2)),
                 child: const CircleAvatar(radius: 16, backgroundColor: Color(0xFFE5F0FF), child: Icon(Icons.person, size: 20, color: primaryBlue)),
               ),
             ),
@@ -104,11 +104,11 @@ class _AdminHomePageState extends State<AdminHomePage> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.withOpacity(0.2)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          border: Border.all(color: Colors.grey.withValues(alpha:0.2)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha:0.03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
-          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+          Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: color.withValues(alpha:0.1), borderRadius: BorderRadius.circular(16)),
             child: Icon(icon, color: color, size: 32)),
           const SizedBox(width: 20),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -126,7 +126,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
   Widget _buildSummaryCard({required String title, required String count, required IconData icon, required Color color}) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: color.withOpacity(0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withOpacity(0.2))),
+      decoration: BoxDecoration(color: color.withValues(alpha:0.05), borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withValues(alpha:0.2))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Icon(icon, color: color, size: 32),
         const SizedBox(height: 16),

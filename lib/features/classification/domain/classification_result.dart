@@ -14,8 +14,8 @@ class ClassificationResult {
   factory ClassificationResult.fromJson(Map<String, dynamic> json) {
     return ClassificationResult(
       category: json['category'] as String? ?? 'Unknown',
-      confidence: (json['confidence'] as num).toDouble() ?? 0.0,
-      isSuccsess: json['is_success'] as bool ? ?? false,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      isSuccsess: (json['is_success'] as bool?) ?? false,
       errorMessage: json['error_message'] as String?,
     );
   }

@@ -13,7 +13,6 @@ class LibraryDetailPage extends StatelessWidget {
     const Color primaryBlue = Color(0xFF007BFF);
     const Color darkBlueText = Color(0xFF0A2540);
     const Color lightBlueBg = Color(0xFFF0F7FF);
-    const Color orangeAccent = Color(0xFFFF9800);
     const Color borderGrey = Color(0xFFE0E0E0);
 
     return Scaffold(
@@ -159,7 +158,7 @@ class LibraryDetailPage extends StatelessWidget {
                           child: Icon(
                             Icons.image_outlined,
                             size: 60,
-                            color: Colors.blue.withOpacity(0.3),
+                            color: Colors.blue.withValues(alpha:0.3),
                           ),
                         ),
                       Positioned(
@@ -168,7 +167,7 @@ class LibraryDetailPage extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha:0.5),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -477,7 +476,7 @@ class LibraryDetailPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha:0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.air_outlined, color: Colors.white, size: 24),
@@ -499,7 +498,7 @@ class LibraryDetailPage extends StatelessWidget {
                         Text(
                           item.spreadWarning,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha:0.9),
                             fontSize: 12,
                             height: 1.5,
                           ),

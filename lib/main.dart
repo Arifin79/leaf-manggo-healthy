@@ -6,6 +6,7 @@ import 'features/classification/presentation/pages/home_page.dart';
 import 'features/classification/presentation/providers/classification_provider.dart';
 import 'features/classification/presentation/providers/auth_provider.dart';
 import 'features/classification/presentation/providers/library_provider.dart';
+import 'features/classification/presentation/providers/class_management_provider.dart';
 import 'features/classification/data/firestore_service.dart';
 import 'shared/theme/app_theme.dart';
 
@@ -30,9 +31,10 @@ class LeafClassificationApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ClassificationProvider()),
         ChangeNotifierProvider(create: (_) => AppAuthProvider()),
         ChangeNotifierProvider(create: (_) => LibraryProvider()),
+        ChangeNotifierProvider(create: (_) => ClassManagementProvider()),
       ],
       child: MaterialApp(
-        title: 'Klasifikasi Daun',
+        title: 'ManggoCare',
         theme: AppTheme.theme,
         debugShowCheckedModeBanner: false,
         home: const HomePage(),

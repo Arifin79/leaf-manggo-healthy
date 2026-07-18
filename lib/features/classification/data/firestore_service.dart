@@ -36,6 +36,15 @@ class FirestoreService {
     await _diseasesRef.add(item.toFirestore());
   }
 
+  Future<String> addLibraryItemAndGetId(LibraryItemData item) async {
+    final docRef = await _diseasesRef.add(item.toFirestore());
+    return docRef.id;
+  }
+
+  Future<void> setLibraryItemActive(String id, bool isActive) async {
+    await _diseasesRef.doc(id).update({'isActive': isActive});
+  }
+
   Future<void> updateLibraryItem(String id, LibraryItemData item) async {
     await _diseasesRef.doc(id).update(item.toFirestore());
   }

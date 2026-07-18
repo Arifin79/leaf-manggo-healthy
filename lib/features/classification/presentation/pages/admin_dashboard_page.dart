@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/library_item_data.dart';
 import '../providers/library_provider.dart';
+import '../providers/class_management_provider.dart';
 import 'add_disease_page.dart';
+import 'add_disease_class_page.dart';
 import 'admin_library_detail_page.dart' as admin_detail;
 
 class AdminDashboardPage extends StatefulWidget {
@@ -18,6 +20,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LibraryProvider>().loadItems();
+      context.read<ClassManagementProvider>().fetchModelStatus();
     });
   }
 
@@ -37,6 +40,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
+
+              // Classes added via the dynamic "train new class" flow also
+              // exist in the Flask model (classes.json, dataset_master.csv,
+              // rf_addon_*.pkl) — remove them there too, or the model keeps
+              // recognizing a class that no longer has a library entry.
+              //
+              // Only do this for entries that actually finished training
+              // (isActive == true). A pending/failed entry (isActive ==
+              // false) never made it into the model under this specific
+              // Firestore doc, so there's nothing there to clean up — and
+              // if its name happens to collide with one of the 6 protected
+              // original classes, calling the backend would incorrectly
+              // get rejected and block deleting the local ghost entry too.
+              if (item.addedBy != null && item.isActive) {
+                final removedFromModel = await context.read<ClassManagementProvider>().deleteDynamicClass(item.title);
+                if (!removedFromModel && mounted) {
+                  final message = context.read<ClassManagementProvider>().deleteErrorMessage;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(message ?? 'Gagal menghapus kelas dari model')),
+                  );
+                  return;
+                }
+              }
+
+              if (!mounted) return;
               final success = await context.read<LibraryProvider>().deleteItem(item.id!);
               if (mounted && success) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -48,6 +76,59 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showAddOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.edit_note, color: Colors.blue),
+                title: const Text('Tambah Data Pustaka'),
+                subtitle: const Text('Tambah info penyakit yang sudah dikenali model'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddDiseasePage()),
+                  );
+                  if (context.mounted) {
+                    context.read<LibraryProvider>().loadItems();
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.model_training, color: Colors.deepPurple),
+                title: const Text('Tambah Kelas Penyakit Baru'),
+                subtitle: const Text('Latih model mengenali penyakit baru dari foto sampel'),
+                onTap: () async {
+                  Navigator.pop(ctx);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddDiseaseClassPage()),
+                  );
+                  if (context.mounted) {
+                    context.read<LibraryProvider>().loadItems();
+                    context.read<ClassManagementProvider>().fetchModelStatus();
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -74,7 +155,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     context,
                     MaterialPageRoute(builder: (_) => AddDiseasePage(itemToEdit: item)),
                   );
-                  if (mounted) {
+                  if (context.mounted) {
                     context.read<LibraryProvider>().loadItems();
                   }
                 },
@@ -123,7 +204,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             hintText: 'Tulis informasi tambahan atau catatan rahasia di sini...\n(Hanya admin yang bisa melihat)',
                             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, height: 1.5),
                             filled: true,
-                            fillColor: Colors.amber.shade50.withOpacity(0.3),
+                            fillColor: Colors.amber.shade50.withValues(alpha:0.3),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade200)),
                             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade200)),
                             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.amber.shade600, width: 2)),
@@ -242,7 +323,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     border: Border.all(color: Colors.grey.shade200),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha:0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -268,13 +349,40 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        item.status,
-                        style: TextStyle(
-                          color: Colors.orange.shade700,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Consumer<ClassManagementProvider>(
+                        builder: (context, classProvider, _) {
+                          final isModelActive = item.isActive && classProvider.isClassActive(item.title);
+                          return Wrap(
+                            spacing: 8,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                item.status,
+                                style: TextStyle(
+                                  color: Colors.orange.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isModelActive ? Colors.green.shade50 : Colors.amber.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: isModelActive ? Colors.green.shade200 : Colors.amber.shade300),
+                                ),
+                                child: Text(
+                                  isModelActive ? 'Model Aktif' : 'Sedang Diproses',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: isModelActive ? Colors.green.shade700 : Colors.amber.shade800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                     trailing: IconButton(
@@ -290,16 +398,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddDiseasePage()),
-          );
-          // Refresh after returning from add page
-          if (mounted) {
-            context.read<LibraryProvider>().loadItems();
-          }
-        },
+        onPressed: () => _showAddOptions(context),
         backgroundColor: primaryBlue,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Penyakit Baru', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

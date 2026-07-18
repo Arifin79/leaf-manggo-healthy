@@ -124,6 +124,8 @@ class ImagePreviewPage extends StatelessWidget {
           MaterialPageRoute(builder: (_) => const ResultPage()),
         );
       }
+    } else if (provider.state == ClassificationState.invalidImage) {
+      _showInvalidImageDialog(context, provider.errorMessage);
     } else if (provider.state == ClassificationState.error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -135,6 +137,37 @@ class ImagePreviewPage extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _showInvalidImageDialog(BuildContext context, String? message) {
+    return showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        icon: Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700, size: 40),
+        title: const Text('Foto Tidak Valid', textAlign: TextAlign.center),
+        content: Text(
+          message ?? 'Foto tidak valid, silakan coba lagi.',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Coba Lagi', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -203,7 +236,15 @@ class ImagePreviewPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
+                if (loading && provider.loadingMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      provider.loadingMessage,
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  ),
                 PrimaryButton(
                   label: 'Klasifikasi Sekarang',
                   isLoading: loading,

@@ -19,7 +19,6 @@ class ClassificationRepositoryImpl implements ClassificationRepository {
     http.Client? client,
   }) : _client = client ?? http.Client();
 
-  // Crop area yang sesuai dengan overlay frame (80% tengah) sebelum kirim ke backend
   Future<File> _cropToOverlayArea(File imageFile) async {
     final bytes  = await imageFile.readAsBytes();
     final origin = img.decodeImage(bytes);

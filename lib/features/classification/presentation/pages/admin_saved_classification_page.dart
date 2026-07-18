@@ -53,7 +53,6 @@ class _AdminSavedClassificationPageState extends State<AdminSavedClassificationP
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryBlue = Color(0xFF007BFF);
     const Color darkBlueText = Color(0xFF0A2540);
 
     final authProvider = Provider.of<AppAuthProvider>(context);
@@ -89,17 +88,17 @@ class _AdminSavedClassificationPageState extends State<AdminSavedClassificationP
             return Center(child: Text('Terjadi kesalahan: ${snapshot.error}'));
           }
 
-          final _savedItems = snapshot.data ?? [];
+          final savedItems = snapshot.data ?? [];
 
-          if (_savedItems.isEmpty) {
+          if (savedItems.isEmpty) {
             return const Center(child: Text('Belum ada data klasifikasi tersimpan'));
           }
 
           return ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            itemCount: _savedItems.length,
+            itemCount: savedItems.length,
             itemBuilder: (context, index) {
-              final item = _savedItems[index];
+              final item = savedItems[index];
               
               IconData icon;
               Color iconColor;
@@ -148,7 +147,7 @@ class _AdminSavedClassificationPageState extends State<AdminSavedClassificationP
                     border: Border.all(color: Colors.grey.shade200),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
+                        color: Colors.black.withValues(alpha:0.02),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),

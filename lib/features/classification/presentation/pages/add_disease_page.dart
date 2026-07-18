@@ -122,6 +122,8 @@ class _AddDiseasePageState extends State<AddDiseasePage> {
       }
     }
 
+    if (!mounted) return;
+
     final item = LibraryItemData(
       id: widget.itemToEdit?.id,
       title: _titleCtrl.text.trim(),

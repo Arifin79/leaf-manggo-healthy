@@ -413,7 +413,7 @@ class _EditProfilePageState extends State<EditProfilePage>
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: primaryBlue.withOpacity(0.1),
+            color: primaryBlue.withValues(alpha:0.1),
             borderRadius: BorderRadius.circular(14),
           ),
           child: Icon(icon, color: primaryBlue, size: 26),
