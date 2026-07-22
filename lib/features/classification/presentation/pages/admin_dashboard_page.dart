@@ -3,8 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/library_item_data.dart';
 import '../providers/library_provider.dart';
 import '../providers/class_management_provider.dart';
-import 'add_disease_page.dart';
-import 'add_disease_class_page.dart';
+import 'disease_form_page.dart';
 import 'admin_library_detail_page.dart' as admin_detail;
 
 class AdminDashboardPage extends StatefulWidget {
@@ -79,57 +78,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  void _showAddOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.edit_note, color: Colors.blue),
-                title: const Text('Tambah Data Pustaka'),
-                subtitle: const Text('Tambah info penyakit yang sudah dikenali model'),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AddDiseasePage()),
-                  );
-                  if (context.mounted) {
-                    context.read<LibraryProvider>().loadItems();
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.model_training, color: Colors.deepPurple),
-                title: const Text('Tambah Kelas Penyakit Baru'),
-                subtitle: const Text('Latih model mengenali penyakit baru dari foto sampel'),
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const AddDiseaseClassPage()),
-                  );
-                  if (context.mounted) {
-                    context.read<LibraryProvider>().loadItems();
-                    context.read<ClassManagementProvider>().fetchModelStatus();
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
+  Future<void> _openAddForm(BuildContext context) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const DiseaseFormPage()),
     );
+    if (context.mounted) {
+      context.read<LibraryProvider>().loadItems();
+      context.read<ClassManagementProvider>().fetchModelStatus();
+    }
   }
 
   void _showMoreOptions(BuildContext context, LibraryItemData item) {
@@ -153,10 +110,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   Navigator.pop(ctx);
                   await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => AddDiseasePage(itemToEdit: item)),
+                    MaterialPageRoute(builder: (_) => DiseaseFormPage(itemToEdit: item)),
                   );
                   if (context.mounted) {
                     context.read<LibraryProvider>().loadItems();
+                    context.read<ClassManagementProvider>().fetchModelStatus();
                   }
                 },
               ),
@@ -398,7 +356,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddOptions(context),
+        onPressed: () => _openAddForm(context),
         backgroundColor: primaryBlue,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Penyakit Baru', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),

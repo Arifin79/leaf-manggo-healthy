@@ -145,10 +145,14 @@ class ClassManagementProvider extends ChangeNotifier {
   /// (description/symptoms/treatment) which it validates as non-empty but
   /// never actually stores — they're derived here from the richer data
   /// instead of asking the admin to fill duplicate boxes for them.
+  /// [existingId] lets this reuse a library entry that already exists in
+  /// Firestore (e.g. an admin editing a never-trained item and adding
+  /// photos to it) instead of always creating a new document.
   Future<bool> submitNewClass({
     required LibraryItemData libraryData,
     required List<File> photos,
     required String adminUid,
+    String? existingId,
   }) async {
     final className = libraryData.title.trim();
 
@@ -160,13 +164,18 @@ class ClassManagementProvider extends ChangeNotifier {
     _uploadProgress = 0.1;
     notifyListeners();
 
-    // Create a pending Firestore entry immediately so admins can see the
-    // class is "in progress" from the library page while training runs.
+    // Create (or update) a pending Firestore entry immediately so admins
+    // can see the class is "in progress" from the library page while
+    // training runs.
     String? pendingId;
     try {
-      pendingId = await _firestoreService.addLibraryItemAndGetId(
-        libraryData.copyWith(isActive: false, addedBy: adminUid),
-      );
+      final pendingData = libraryData.copyWith(isActive: false, addedBy: adminUid);
+      if (existingId != null) {
+        await _firestoreService.updateLibraryItem(existingId, pendingData);
+        pendingId = existingId;
+      } else {
+        pendingId = await _firestoreService.addLibraryItemAndGetId(pendingData);
+      }
     } catch (e) {
       _isUploading = false;
       _errorMessage = 'Gagal menyimpan data awal: $e';
@@ -196,6 +205,44 @@ class ClassManagementProvider extends ChangeNotifier {
 
     if (!ack.isSuccess) {
       await _deletePendingFirestoreEntry();
+      _isUploading = false;
+      _isTraining = false;
+      _errorMessage = ack.message;
+      notifyListeners();
+      return false;
+    }
+
+    _isUploading = false;
+    _isTraining = true;
+    _currentStep = 'Mengekstraksi fitur gambar & melatih ulang model';
+    _uploadProgress = 0.4;
+    notifyListeners();
+
+    return pollTrainingStatus();
+  }
+
+  /// Adds more sample photos to a class the model already recognizes and
+  /// retrains its addon on the combined dataset — used from the edit form
+  /// when an admin tops up an existing class's photo set instead of
+  /// creating a brand-new one. No Firestore doc is created or rolled back
+  /// here (unlike [submitNewClass]); the library entry already exists and
+  /// callers save its metadata separately.
+  Future<bool> submitRetrain({
+    required String className,
+    required List<File> newPhotos,
+  }) async {
+    _isUploading = true;
+    _isTraining = false;
+    _isSuccess = false;
+    _errorMessage = null;
+    _pendingFirestoreId = null;
+    _currentStep = 'Mengunggah foto ke server';
+    _uploadProgress = 0.1;
+    notifyListeners();
+
+    final ack = await _service.retrainClass(className: className, photos: newPhotos);
+
+    if (!ack.isSuccess) {
       _isUploading = false;
       _isTraining = false;
       _errorMessage = ack.message;

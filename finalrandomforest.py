@@ -42,6 +42,7 @@ FEATURE_COLUMNS = ['contrast', 'correlation', 'energy', 'homogeneity',
                     'h_mean', 'h_std', 's_mean', 's_std', 'v_mean', 'v_std']
 
 MIN_IMAGES_PER_CLASS = 20
+RETRAIN_MIN_IMAGES = 5
 MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024
 ADDON_CONFIDENCE_THRESHOLD = 0.70
 
@@ -241,7 +242,43 @@ def _load_addon_models():
     return loaded
 
 
-def _run_add_class_job(class_name, image_paths, description, symptoms, treatment):
+def _save_uploaded_images(class_dir, images):
+    """
+    Saves uploaded image files into class_dir, continuing the filename
+    numbering from whatever is already there. This makes it safe to call
+    repeatedly for the same class (e.g. retraining with extra photos)
+    without ever overwriting previously stored images.
+    """
+    os.makedirs(class_dir, exist_ok=True)
+    safe_name = os.path.basename(class_dir)
+    existing_count = len(glob.glob(os.path.join(class_dir, f'{safe_name}_*.jpg')))
+
+    saved_paths = []
+    for offset, image_file in enumerate(images):
+        file_bytes = image_file.read()
+        if len(file_bytes) > MAX_IMAGE_SIZE_BYTES:
+            continue
+        file_array = np.frombuffer(file_bytes, np.uint8)
+        img = cv2.imdecode(file_array, cv2.IMREAD_COLOR)
+        if img is None:
+            continue
+        idx = existing_count + offset
+        out_path = os.path.join(class_dir, f'{safe_name}_{idx:03d}.jpg')
+        cv2.imwrite(out_path, img)
+        saved_paths.append(out_path)
+    return saved_paths
+
+
+def _run_training_job(class_name, image_paths, min_required):
+    """
+    Shared training core for both a brand-new class (/add_class) and an
+    incremental retrain of an existing one (/retrain_class). Only the new
+    photos in `image_paths` are feature-extracted — previously processed
+    photos already have their rows sitting in dataset_master.csv, and
+    _train_addon_model() always retrains from the full accumulated file,
+    so the addon naturally gets more accurate as more photos pile up over
+    successive retrains.
+    """
     try:
         _update_training_status(
             is_training=True, class_name=class_name, error=None, result=None,
@@ -256,7 +293,7 @@ def _run_add_class_job(class_name, image_paths, description, symptoms, treatment
             img = _center_crop_square(img)
             feature_rows.append(extract_combined_features(img))
 
-        if len(feature_rows) < MIN_IMAGES_PER_CLASS:
+        if len(feature_rows) < min_required:
             _update_training_status(
                 is_training=False, error='Fitur valid kurang dari minimum yang diperlukan.',
                 current_step='Gagal', progress=0.0,
@@ -291,6 +328,7 @@ def _run_add_class_job(class_name, image_paths, description, symptoms, treatment
                 'total_classes': len(classes_list),
                 'classes': classes_list,
                 'note': note,
+                'new_photos_added': len(feature_rows),
             },
         )
     except Exception as e:
@@ -477,20 +515,7 @@ def add_class():
 
     safe_name = secure_filename(class_name)
     class_dir = os.path.join(TRAINING_IMAGES_DIR, safe_name)
-    os.makedirs(class_dir, exist_ok=True)
-
-    saved_paths = []
-    for idx, image_file in enumerate(images):
-        file_bytes = image_file.read()
-        if len(file_bytes) > MAX_IMAGE_SIZE_BYTES:
-            continue
-        file_array = np.frombuffer(file_bytes, np.uint8)
-        img = cv2.imdecode(file_array, cv2.IMREAD_COLOR)
-        if img is None:
-            continue
-        out_path = os.path.join(class_dir, f'{safe_name}_{idx:03d}.jpg')
-        cv2.imwrite(out_path, img)
-        saved_paths.append(out_path)
+    saved_paths = _save_uploaded_images(class_dir, images)
 
     if len(saved_paths) < MIN_IMAGES_PER_CLASS:
         return jsonify({'is_success': False,
@@ -502,8 +527,8 @@ def add_class():
     )
 
     thread = threading.Thread(
-        target=_run_add_class_job,
-        args=(class_name, saved_paths, description, symptoms, treatment),
+        target=_run_training_job,
+        args=(class_name, saved_paths, MIN_IMAGES_PER_CLASS),
         daemon=True,
     )
     thread.start()
@@ -511,6 +536,67 @@ def add_class():
     return jsonify({
         'is_success': True,
         'message': f"Kelas '{class_name}' sedang diproses dan model sedang dilatih ulang.",
+        'class_name': class_name,
+        'total_images_received': len(saved_paths),
+    })
+
+
+@app.route('/retrain_class', methods=['POST'])
+def retrain_class():
+    """
+    Adds more sample photos to a class the model already knows and retrains
+    its addon on the combined (old + new) dataset. Unlike /add_class this
+    requires the class to already exist, and only needs a handful of new
+    photos rather than a fresh minimum of 20 — every retrain accumulates
+    onto the same dataset_master.csv rows, so accuracy tends to improve the
+    more times a class gets topped up with fresh photos.
+    """
+    class_name = request.form.get('class_name', '').strip()
+    images = request.files.getlist('images')
+
+    if not class_name:
+        return jsonify({'is_success': False, 'error_message': 'Nama kelas wajib diisi'}), 400
+
+    existing_classes = _read_classes_json().get('classes', [])
+    matching = [c for c in existing_classes if c.strip().lower() == class_name.lower()]
+    if not matching:
+        return jsonify({'is_success': False,
+                        'error_message': f"Kelas '{class_name}' belum dikenal model. Gunakan tambah kelas baru."}), 404
+    # Keep the casing/spelling already on record instead of whatever the
+    # client happened to send.
+    class_name = matching[0]
+
+    if len(images) < RETRAIN_MIN_IMAGES:
+        return jsonify({'is_success': False,
+                        'error_message': f'Minimal {RETRAIN_MIN_IMAGES} foto diperlukan untuk melatih ulang'}), 400
+
+    if training_status['is_training']:
+        return jsonify({'is_success': False,
+                        'error_message': 'Proses training lain sedang berjalan, coba lagi nanti.'}), 409
+
+    safe_name = secure_filename(class_name)
+    class_dir = os.path.join(TRAINING_IMAGES_DIR, safe_name)
+    saved_paths = _save_uploaded_images(class_dir, images)
+
+    if len(saved_paths) < RETRAIN_MIN_IMAGES:
+        return jsonify({'is_success': False,
+                        'error_message': f'Hanya {len(saved_paths)} foto valid diterima, minimal {RETRAIN_MIN_IMAGES} diperlukan'}), 400
+
+    _update_training_status(
+        is_training=True, class_name=class_name, error=None, result=None,
+        current_step='Mengunggah foto ke server', progress=0.1,
+    )
+
+    thread = threading.Thread(
+        target=_run_training_job,
+        args=(class_name, saved_paths, RETRAIN_MIN_IMAGES),
+        daemon=True,
+    )
+    thread.start()
+
+    return jsonify({
+        'is_success': True,
+        'message': f"Foto tambahan untuk '{class_name}' sedang diproses, model sedang dilatih ulang.",
         'class_name': class_name,
         'total_images_received': len(saved_paths),
     })

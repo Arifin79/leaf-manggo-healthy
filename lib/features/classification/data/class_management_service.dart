@@ -159,6 +159,7 @@ class ClassManagementService {
   final http.Client _client;
 
   static const int minPhotos = 20;
+  static const int retrainMinPhotos = 5;
   static const int maxPhotos = 100;
   static const int maxPhotoSizeBytes = 10 * 1024 * 1024;
   static const int uploadBatchSize = 10;
@@ -258,6 +259,46 @@ class ClassManagementService {
         return AddClassResult.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
       } catch (_) {
         return AddClassResult.error('Gagal menambahkan kelas: ${response.statusCode}');
+      }
+    } on SocketException {
+      return AddClassResult.error('Tidak ada koneksi internet. Pastikan perangkat terhubung ke internet.');
+    } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        return AddClassResult.error(
+            'Proses training membutuhkan waktu lebih lama dari biasanya. Silakan cek kembali setelah beberapa menit.');
+      }
+      return AddClassResult.error('Error: $e');
+    }
+  }
+
+  /// Adds more sample photos to a class the model already knows and
+  /// retrains its addon on the combined dataset. `photos` only needs the
+  /// *new* pictures being added, not the ones already on file.
+  Future<AddClassResult> retrainClass({
+    required String className,
+    required List<File> photos,
+  }) async {
+    try {
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/retrain_class'));
+      request.fields['class_name'] = className;
+
+      for (var i = 0; i < photos.length; i += uploadBatchSize) {
+        final batch = photos.skip(i).take(uploadBatchSize);
+        for (final photo in batch) {
+          request.files.add(await http.MultipartFile.fromPath('images', photo.path));
+        }
+      }
+
+      final streamed = await _client.send(request).timeout(trainingTimeout);
+      final response = await http.Response.fromStream(streamed);
+
+      try {
+        return AddClassResult.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      } catch (_) {
+        if (response.statusCode == 500) {
+          return AddClassResult.error('Terjadi kesalahan di server. Silakan coba beberapa saat lagi.');
+        }
+        return AddClassResult.error('Gagal melatih ulang kelas: ${response.statusCode}');
       }
     } on SocketException {
       return AddClassResult.error('Tidak ada koneksi internet. Pastikan perangkat terhubung ke internet.');
